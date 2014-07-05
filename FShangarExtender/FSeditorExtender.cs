@@ -65,7 +65,16 @@ class FSeditorExtender : MonoBehaviour
 
     private void getHotKey()
     {
-        StreamReader stream = new StreamReader(settingsFile);
+        StreamReader stream;
+        try
+        {
+            stream = new StreamReader(settingsFile);
+        }
+        catch
+        {
+            Debug.Log("FSeditorExtender: settings.txt not found in GameData\\FShangarExtender\\, using default hotkey numpad *");
+            return;
+        }
         string newLine = string.Empty;
         int craftFileFormat = 0;
 
