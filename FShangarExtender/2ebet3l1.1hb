@@ -6,14 +6,7 @@ using System.IO;
 
 [KSPAddon(KSPAddon.Startup.EditorAny, false)]
 class FSeditorExtender : MonoBehaviour
-{    
-    private bool SPHextentsAlwaysMax = true;
-    private bool VABextentsAlwaysMax = true;
-    private bool BuildingStartMaxSize = false;
-
-    private bool SPHmaxed = false;
-    private bool VABmaxed = false;
-
+{
     private VABCamera cameraVAB;
     private float cameraVABHeightMin, cameraVABHeightMax = 300f;
     private float cameraVABDistanceMin, cameraVABDistanceMax = 1000f;
@@ -73,31 +66,7 @@ class FSeditorExtender : MonoBehaviour
         fetchScenes();
         fetchCrew();
         fetchLights();
-        getSettings();
-
-
-        SPHmaxed = BuildingStartMaxSize;
-        VABmaxed = false; // Because VAB scaling doesn't work
-
-        //setScaleVAB(VABextentsAlwaysMax || BuildingStartMaxSize); // VAB scaling doesn't work
-        setScaleSPH(SPHmaxed);
-        setCamExtentsSPH(SPHextentsAlwaysMax || SPHmaxed);
-        setCamExtentsVAB(VABextentsAlwaysMax || VABmaxed);
-    }
-
-    private void toggleSize()
-    {
-        if (sceneGeometryVAB != null)
-        {
-            Debug.Log("VAB scaling disabled. Models inaccessible. (This is for info only, known error)");            
-            //VABmaxed = !VABmaxed;
-            //setScaleVAB(VABmaxed);
-        }
-        else if (sceneGeometrySPH != null)
-        {
-            SPHmaxed = !SPHmaxed;
-            setScaleSPH(SPHmaxed);
-        }
+        getHotKey();
     }
 
     private void fetchLights()
@@ -204,7 +173,7 @@ class FSeditorExtender : MonoBehaviour
         }
     }
 
-    private void getSettings()
+    private void getHotKey()
     {
         StreamReader stream;
         try
@@ -223,30 +192,9 @@ class FSeditorExtender : MonoBehaviour
         int.TryParse(newLine, out craftFileFormat);
 
         newLine = readSetting(stream);
+
         hotKey = newLine;
-
         Debug.Log("FSeditorExtender: Assigned hangar scale hotkey: " + newLine);
-
-        if (craftFileFormat >= 2)
-        {
-            try
-            {
-                newLine = readSetting(stream);
-                SPHextentsAlwaysMax = bool.Parse(newLine);
-                newLine = readSetting(stream);
-                VABextentsAlwaysMax = bool.Parse(newLine);
-                newLine = readSetting(stream);
-                BuildingStartMaxSize = bool.Parse(newLine);                
-            }
-            catch
-            {
-                Debug.Log("FSeditorExtender: Error parsing config bools");
-            }
-        }
-        else
-        {
-            Debug.Log("FSeditorExtender: Old settings file format, using default Extent and Scale settings.");
-        }
     }
 
     private string readSetting (StreamReader stream)
@@ -257,11 +205,12 @@ class FSeditorExtender : MonoBehaviour
             while (newLine == string.Empty && !stream.EndOfStream)
             {
                 newLine = stream.ReadLine();
-                newLine = newLine.Trim(' ');
+                newLine = newLine.TrimStart(' ');
                 if (newLine.Length > 1)
                 {
                     if (newLine.Substring(0, 2) == "//")
-                    {                        
+                    {
+                        //Debug.Log("FSeditorExtender settings comment Line: " + newLine);
                         newLine = string.Empty;
                     }
                 }
@@ -280,7 +229,28 @@ class FSeditorExtender : MonoBehaviour
         if (gotKeyPress)
         {
             Debug.Log("FSeditorExtender: Scaling Hangar Geometry");
-            toggleSize();
+            if (sceneGeometryVAB != null)
+            {
+                setScaleVAB();
+            }
+            else if (sceneGeometrySPH != null)
+            {
+                setScaleSPH();
+            }
+
+            if (editorSpaceNavigator != null)
+            {
+                toggleSpaceNavExtents();
+            }
+
+            if (editorLogic.Length > 0)
+            {
+                Debug.Log ("FSeditorExtender: Found EditorLogic: " + editorLogic.Length);
+                for (int i = 0; i < editorLogic.Length; i++)
+                {
+                    toggleEditorExtents(i);
+                }
+            }
         }
     }
 
@@ -292,16 +262,13 @@ class FSeditorExtender : MonoBehaviour
 
     private void toggleSpaceNavExtents()
     {
-        if (editorSpaceNavigator != null)
+        if (editorSpaceNavigator.bounds.extents == editorSpaceNavigatorBoundsMin)
         {
-            if (editorSpaceNavigator.bounds.extents == editorSpaceNavigatorBoundsMin)
-            {
-                setSpaceNavExtents(editorSpaceNavigator, editorSpaceNavigatorBoundsMax);
-            }
-            else
-            {
-                setSpaceNavExtents(editorSpaceNavigator, editorSpaceNavigatorBoundsMin);
-            }
+            setSpaceNavExtents(editorSpaceNavigator, editorSpaceNavigatorBoundsMax);
+        }
+        else
+        {
+            setSpaceNavExtents(editorSpaceNavigator, editorSpaceNavigatorBoundsMin);
         }
     }
 
@@ -312,8 +279,7 @@ class FSeditorExtender : MonoBehaviour
 
     private void setSpaceNavExtents(SpaceNavigatorLocalCamera cam, Vector3 newSize)
     {
-        if (cam != null)
-            cam.bounds.extents = newSize;
+        cam.bounds.extents = newSize;
     }
 
     private bool rescaleKeyPressed()
@@ -332,22 +298,25 @@ class FSeditorExtender : MonoBehaviour
         return gotKeyPress;
     }
 
-    private void setScaleSPH(bool max)
+    private void setScaleSPH()
     {
-        if (max) //sceneGeometrySPH.transform.localScale.x == sceneScaleMinSPH
+        if (sceneGeometrySPH.transform.localScale.x == sceneScaleMinSPH)
         {
             RenderSettings.fogStartDistance *= sceneScaleMaxSPH / sceneScaleMinSPH;
             RenderSettings.fogEndDistance *= sceneScaleMaxSPH / sceneScaleMinSPH;
 
             sceneGeometrySPH.transform.localScale = Vector3.one * sceneScaleMaxSPH;
-            setCamExtentsSPH(true);
-            //if (sceneLights.Length > 0)
-            //{
-            //    for (int i = 0; i < sceneLights.Length; ++i)
-            //    {
-            //        if (sceneLights[i].type == LightType.Spot) sceneLights[i].range *= sceneScaleMaxSPH / sceneScaleMinSPH;
-            //    }
-            //}
+            cameraSPH.maxHeight = cameraSPHHeightMax;
+            cameraSPH.maxDistance = cameraSPHDistanceMax;
+            cameraSPH.maxDisplaceX = cameraSPHDisplaceXMax;
+            cameraSPH.maxDisplaceZ = cameraSPHDisplaceZMax;
+            if (sceneLights.Length > 0)
+            {
+                for (int i = 0; i < sceneLights.Length; ++i)
+                {
+                    if (sceneLights[i].type == LightType.Spot) sceneLights[i].range *= sceneScaleMaxSPH / sceneScaleMinSPH;
+                }
+            }
         }
         else
         {
@@ -355,110 +324,47 @@ class FSeditorExtender : MonoBehaviour
             RenderSettings.fogEndDistance /= sceneScaleMaxSPH / sceneScaleMinSPH;
 
             sceneGeometrySPH.transform.localScale = Vector3.one * sceneScaleMinSPH;
-            if (!SPHextentsAlwaysMax) setCamExtentsSPH(false);
-
-            //if (sceneLights.Length > 0)
-            //{
-            //    for (int i = 0; i < sceneLights.Length; ++i)
-            //    {
-            //        if (sceneLights[i].type == LightType.Spot) sceneLights[i].range /= sceneScaleMaxSPH / sceneScaleMinSPH;
-            //    }
-            //}
+            cameraSPH.maxHeight = cameraSPHHeightMin;
+            cameraSPH.maxDistance = cameraSPHDistanceMin;
+            cameraSPH.maxDisplaceX = cameraSPHDisplaceXMin;
+            cameraSPH.maxDisplaceZ = cameraSPHDisplaceZMin;
+            if (sceneLights.Length > 0)
+            {
+                for (int i = 0; i < sceneLights.Length; ++i)
+                {
+                    if (sceneLights[i].type == LightType.Spot) sceneLights[i].range /= sceneScaleMaxSPH / sceneScaleMinSPH;
+                }
+            }
         }
         sceneGeometrySPH.transform.localPosition = new Vector3(0f, -0.2f * (sceneGeometrySPH.transform.localScale.x - sceneScaleMinSPH), 0f);
     }
 
-
-
-    private void setScaleVAB(bool max)
+    private void setScaleVAB()
     {
-        if (sceneGeometryVAB != null)
+        if (sceneGeometryVAB.transform.localScale.x == sceneScaleMinVAB)
         {
-            if (max) //sceneGeometryVAB.transform.localScale.x == sceneScaleMinVAB
-            {
-                sceneGeometryVAB.transform.localScale = Vector3.one * sceneScaleMaxVAB;
-                setCamExtentsVAB(true);
-                if (sceneLights.Length > 0)
-                {
-                    for (int i = 0; i < sceneLights.Length; ++i)
-                    {
-                        if (sceneLights[i].type == LightType.Spot) sceneLights[i].range *= sceneScaleMaxVAB / sceneScaleMinVAB;
-                    }
-                }
-            }
-            else
-            {
-                sceneGeometryVAB.transform.localScale = Vector3.one * sceneScaleMinVAB;
-                if (!VABextentsAlwaysMax) setCamExtentsVAB(false);
-
-                if (sceneLights.Length > 0)
-                {
-                    for (int i = 0; i < sceneLights.Length; ++i)
-                    {
-                        if (sceneLights[i].type == LightType.Spot) sceneLights[i].range /= sceneScaleMaxVAB / sceneScaleMinVAB;
-                    }
-                }
-            }
-        }
-    }
-
-    private void setCamExtentsSPH(bool max)
-    {
-        if (sceneGeometrySPH != null)
-        {
-            if (max)
-            {
-                setSpaceNavExtents(editorSpaceNavigator, editorSpaceNavigatorBoundsMax);
-                cameraSPH.maxHeight = cameraSPHHeightMax;
-                cameraSPH.maxDistance = cameraSPHDistanceMax;
-                cameraSPH.maxDisplaceX = cameraSPHDisplaceXMax;
-                cameraSPH.maxDisplaceZ = cameraSPHDisplaceZMax;
-            }
-            else
-            {
-                setSpaceNavExtents(editorSpaceNavigator, editorSpaceNavigatorBoundsMin);
-                cameraSPH.maxHeight = cameraSPHHeightMin;
-                cameraSPH.maxDistance = cameraSPHDistanceMin;
-                cameraSPH.maxDisplaceX = cameraSPHDisplaceXMin;
-                cameraSPH.maxDisplaceZ = cameraSPHDisplaceZMin;
-            }
-            for (int i = 0; i < editorLogic.Length; i++)
-            {
-                if (max)
-                {
-                    setEditorExtents(editorLogic[i], editorLogicBoundsMax);
-                }
-                else
-                {
-                    setEditorExtents(editorLogic[i], editorLogicBoundsMin);
-                }
-            }
-        }
-    }
-
-    private void setCamExtentsVAB(bool max)
-    {
-        if (max)
-        {
-            setSpaceNavExtents(editorSpaceNavigator, editorSpaceNavigatorBoundsMax);
+            sceneGeometryVAB.transform.localScale = Vector3.one * sceneScaleMaxVAB;
             cameraVAB.maxHeight = cameraVABHeightMax;
             cameraVAB.maxDistance = cameraVABDistanceMax;
+            if (sceneLights.Length > 0)
+            {
+                for (int i = 0; i < sceneLights.Length; ++i)
+                {
+                    if (sceneLights[i].type == LightType.Spot) sceneLights[i].range *= sceneScaleMaxVAB / sceneScaleMinVAB;
+                }
+            }
         }
         else
         {
-            setSpaceNavExtents(editorSpaceNavigator, editorSpaceNavigatorBoundsMin);
+            sceneGeometryVAB.transform.localScale = Vector3.one * sceneScaleMinVAB;
             cameraVAB.maxHeight = cameraVABHeightMin;
             cameraVAB.maxDistance = cameraVABDistanceMin;
-        }
-        for (int i = 0; i < editorLogic.Length; i++)
-        {
-            if (max)
+            if (sceneLights.Length > 0)
             {
-                setEditorExtents(editorLogic[i], editorLogicBoundsMax);
-            }
-            else
-            {
-                setEditorExtents(editorLogic[i], editorLogicBoundsMin);
+                for (int i = 0; i < sceneLights.Length; ++i)
+                {
+                    if (sceneLights[i].type == LightType.Spot) sceneLights[i].range /= sceneScaleMaxVAB / sceneScaleMinVAB;
+                }
             }
         }
     }
