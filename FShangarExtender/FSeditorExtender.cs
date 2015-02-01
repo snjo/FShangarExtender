@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using KSP;
 using System.IO;
 
 [KSPAddon(KSPAddon.Startup.EditorAny, false)]
@@ -68,30 +69,61 @@ class FSeditorExtender : MonoBehaviour
 
     public void Start ()
     {
-        fetchCameras();
-        fetchEditorLogic();
-        fetchScenes();
-        fetchCrew();
-        fetchLights();
-        getSettings();
+        //fetchCameras();
+        //fetchEditorLogic();
+        //fetchScenes();
+        //fetchCrew();
+        //fetchLights();
+        //getSettings();
+
+        StartCoroutine(EditorBoundsFixer());
+
+        //setEditorBounds();
 
 
-        SPHmaxed = BuildingStartMaxSize;
-        VABmaxed = false; // Because VAB scaling doesn't work
+        //SPHmaxed = BuildingStartMaxSize;
+        //VABmaxed = BuildingStartMaxSize;
 
-        //setScaleVAB(VABextentsAlwaysMax || BuildingStartMaxSize); // VAB scaling doesn't work
-        setScaleSPH(SPHmaxed);
-        setCamExtentsSPH(SPHextentsAlwaysMax || SPHmaxed);
-        setCamExtentsVAB(VABextentsAlwaysMax || VABmaxed);
+        //setScaleVAB(VABmaxed);
+        //setScaleSPH(SPHmaxed);
+        //setCamExtentsSPH(SPHextentsAlwaysMax || SPHmaxed);
+        //setCamExtentsVAB(VABextentsAlwaysMax || VABmaxed);
     }
 
+    private IEnumerator<YieldInstruction> EditorBoundsFixer() // code taken from NathanKell, https://github.com/NathanKell/RealSolarSystem/blob/master/Source/CameraFixer.cs
+    {
+        while ((object)EditorBounds.Instance == null)
+            yield return null;
+        if ((object)(EditorBounds.Instance) != null)
+        {
+            EditorBounds.Instance.constructionBounds.extents = editorLogicBoundsMax;
+            EditorBounds.Instance.cameraOffsetBounds.extents = editorLogicBoundsMax;
+        }
+        foreach (VABCamera c in Resources.FindObjectsOfTypeAll(typeof(VABCamera)))
+        {
+            c.maxHeight = cameraSPHHeightMax;
+            c.maxDistance = cameraSPHDistanceMax;                
+        }
+
+        foreach (SPHCamera c in Resources.FindObjectsOfTypeAll(typeof(SPHCamera)))
+        {
+            c.maxHeight = cameraVABHeightMax;
+            c.maxDistance = cameraVABDistanceMax;
+            c.maxDisplaceX = cameraSPHDisplaceXMax;
+            c.maxDisplaceZ = cameraSPHDisplaceZMax;                
+        }
+        print("Editor camera set to " + EditorBounds.Instance.cameraMinDistance + "/" + EditorBounds.Instance.cameraMaxDistance
+            + ", bounds " + EditorBounds.Instance.constructionBounds.ToString() + "/" + EditorBounds.Instance.cameraOffsetBounds.ToString());
+    }
+    
+    /*
     private void toggleSize()
     {
         if (sceneGeometryVAB != null)
         {
-            Debug.Log("VAB scaling disabled. Models inaccessible. (This is for info only, known error)");            
-            //VABmaxed = !VABmaxed;
-            //setScaleVAB(VABmaxed);
+            //Debug.Log("VAB scaling disabled. Models inaccessible. (This is for info only, known error)");            
+            VABmaxed = !VABmaxed;
+            setScaleVAB(VABmaxed);
         }
         else if (sceneGeometrySPH != null)
         {
@@ -307,7 +339,7 @@ class FSeditorExtender : MonoBehaviour
 
     private void setEditorExtents(EditorLogic editorLogic, Vector3 newSize)
     {
-        editorLogic.editorBounds.extents = newSize;
+        EditorBounds.Instance.constructionBounds.SetMinMax(newSize, newSize);
     }
 
     private void setSpaceNavExtents(SpaceNavigatorLocalCamera cam, Vector3 newSize)
@@ -339,7 +371,7 @@ class FSeditorExtender : MonoBehaviour
             RenderSettings.fogStartDistance *= sceneScaleMaxSPH / sceneScaleMinSPH;
             RenderSettings.fogEndDistance *= sceneScaleMaxSPH / sceneScaleMinSPH;
 
-            sceneGeometrySPH.transform.localScale = Vector3.one * sceneScaleMaxSPH;
+            //sceneGeometrySPH.transform.localScale = Vector3.one * sceneScaleMaxSPH;
             setCamExtentsSPH(true);
             //if (sceneLights.Length > 0)
             //{
@@ -354,7 +386,7 @@ class FSeditorExtender : MonoBehaviour
             RenderSettings.fogStartDistance /= sceneScaleMaxSPH / sceneScaleMinSPH;
             RenderSettings.fogEndDistance /= sceneScaleMaxSPH / sceneScaleMinSPH;
 
-            sceneGeometrySPH.transform.localScale = Vector3.one * sceneScaleMinSPH;
+            //sceneGeometrySPH.transform.localScale = Vector3.one * sceneScaleMinSPH;
             if (!SPHextentsAlwaysMax) setCamExtentsSPH(false);
 
             //if (sceneLights.Length > 0)
@@ -365,7 +397,7 @@ class FSeditorExtender : MonoBehaviour
             //    }
             //}
         }
-        sceneGeometrySPH.transform.localPosition = new Vector3(0f, -0.2f * (sceneGeometrySPH.transform.localScale.x - sceneScaleMinSPH), 0f);
+        //sceneGeometrySPH.transform.localPosition = new Vector3(0f, -0.2f * (sceneGeometrySPH.transform.localScale.x - sceneScaleMinSPH), 0f);
     }
 
 
@@ -461,5 +493,5 @@ class FSeditorExtender : MonoBehaviour
                 setEditorExtents(editorLogic[i], editorLogicBoundsMin);
             }
         }
-    }
+    }*/
 }

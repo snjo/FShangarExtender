@@ -1,0 +1,10 @@
+//config version
+2
+//Scale hangar key. See https://docs.unity3d.com/Documentation/Manual/Input.html
+[*]
+//SPH Extents always Max? If false, the extents only expand when toggling the large model on
+true
+//VAB Extents always Max? If false, the extents only expand when toggling the large model on
+true
+//Buildings start at max size?
+false
