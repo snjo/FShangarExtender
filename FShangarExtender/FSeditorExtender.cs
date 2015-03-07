@@ -74,7 +74,7 @@ class FSeditorExtender : MonoBehaviour
         //fetchScenes();
         //fetchCrew();
         //fetchLights();
-        //getSettings();
+        getSettings();
 
         StartCoroutine(EditorBoundsFixer());
 
@@ -92,6 +92,7 @@ class FSeditorExtender : MonoBehaviour
 
     private IEnumerator<YieldInstruction> EditorBoundsFixer() // code taken from NathanKell, https://github.com/NathanKell/RealSolarSystem/blob/master/Source/CameraFixer.cs
     {
+        Debug.Log("FSHangarExtender: Attempting work area scaling");
         while ((object)EditorBounds.Instance == null)
             yield return null;
         if ((object)(EditorBounds.Instance) != null)
@@ -234,7 +235,7 @@ class FSeditorExtender : MonoBehaviour
             cameraSPHDisplaceXMin = cameraSPH.maxDisplaceX;
             cameraSPHDisplaceZMin = cameraSPH.maxDisplaceZ;
         }
-    }
+    }*/
 
     private void getSettings()
     {
@@ -305,6 +306,7 @@ class FSeditorExtender : MonoBehaviour
         }
         return newLine;
     }
+     
 
     public void Update ()
     {
@@ -312,10 +314,12 @@ class FSeditorExtender : MonoBehaviour
         if (gotKeyPress)
         {
             Debug.Log("FSeditorExtender: Scaling Hangar Geometry");
-            toggleSize();
+            //toggleSize();
+            StartCoroutine(EditorBoundsFixer());
         }
     }
 
+    /*
     private void toggleEditorExtents(int i)
     {
         if (editorLogic[i].editorBounds.extents == editorLogicBoundsMin) setEditorExtents(editorLogic[i], editorLogicBoundsMax);
@@ -346,7 +350,7 @@ class FSeditorExtender : MonoBehaviour
     {
         if (cam != null)
             cam.bounds.extents = newSize;
-    }
+    }*/
 
     private bool rescaleKeyPressed()
     {
@@ -364,6 +368,7 @@ class FSeditorExtender : MonoBehaviour
         return gotKeyPress;
     }
 
+    /*
     private void setScaleSPH(bool max)
     {
         if (max) //sceneGeometrySPH.transform.localScale.x == sceneScaleMinSPH
