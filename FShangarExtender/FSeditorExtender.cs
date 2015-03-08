@@ -99,17 +99,18 @@ class FSeditorExtender : MonoBehaviour
         {
             EditorBounds.Instance.constructionBounds.extents = editorLogicBoundsMax;
             EditorBounds.Instance.cameraOffsetBounds.extents = editorLogicBoundsMax;
+            EditorBounds.Instance.cameraMaxDistance = cameraSPHDistanceMax;
         }
         foreach (VABCamera c in Resources.FindObjectsOfTypeAll(typeof(VABCamera)))
         {
-            c.maxHeight = cameraSPHHeightMax;
-            c.maxDistance = cameraSPHDistanceMax;                
+            c.maxHeight = cameraVABHeightMax;
+            c.maxDistance = cameraVABDistanceMax;                
         }
 
         foreach (SPHCamera c in Resources.FindObjectsOfTypeAll(typeof(SPHCamera)))
         {
-            c.maxHeight = cameraVABHeightMax;
-            c.maxDistance = cameraVABDistanceMax;
+            c.maxHeight = cameraSPHHeightMax;
+            c.maxDistance = cameraSPHDistanceMax;            
             c.maxDisplaceX = cameraSPHDisplaceXMax;
             c.maxDisplaceZ = cameraSPHDisplaceZMax;                
         }
