@@ -15,6 +15,9 @@ class FSeditorExtender : MonoBehaviour
     private bool SPHmaxed = false;
     private bool VABmaxed = false;
 
+    public float configCamMaxDistance = 80f;
+    public float configMaxWorkArea = 500f;
+
     private VABCamera cameraVAB;
     private float cameraVABHeightMin, cameraVABHeightMax = 300f;
     private float cameraVABDistanceMin, cameraVABDistanceMax = 1000f;
@@ -75,6 +78,7 @@ class FSeditorExtender : MonoBehaviour
         //fetchCrew();
         //fetchLights();
         getSettings();
+        applyConfigMaxSize();
 
         StartCoroutine(EditorBoundsFixer());
 
@@ -88,6 +92,28 @@ class FSeditorExtender : MonoBehaviour
         //setScaleSPH(SPHmaxed);
         //setCamExtentsSPH(SPHextentsAlwaysMax || SPHmaxed);
         //setCamExtentsVAB(VABextentsAlwaysMax || VABmaxed);
+    }
+
+    private void applyConfigMaxSize()
+    {
+        //cameraVABHeightMin = 300f;
+        //cameraVABHeightMax = 300f;
+        cameraVABDistanceMin = 5f;
+        cameraVABDistanceMax = configCamMaxDistance;
+        //cameraSPHHeightMin = 300f;
+        //cameraSPHHeightMax = 300f;
+        cameraSPHDistanceMin = 5f;
+        cameraSPHDistanceMax = configCamMaxDistance;
+        cameraSPHDisplaceXMin = configMaxWorkArea;
+        cameraSPHDisplaceXMax = configMaxWorkArea;
+        cameraSPHDisplaceZMin = configMaxWorkArea;
+        cameraSPHDisplaceZMax = configMaxWorkArea;
+
+        editorSpaceNavigatorBoundsMin = new Vector3(configMaxWorkArea, 200f, configMaxWorkArea);
+        editorSpaceNavigatorBoundsMax = new Vector3(configMaxWorkArea, 200f, configMaxWorkArea);
+
+        editorLogicBoundsMin = new Vector3(configMaxWorkArea, 300f, configMaxWorkArea);
+        editorLogicBoundsMax = new Vector3(configMaxWorkArea, 300f, configMaxWorkArea);
     }
 
     private IEnumerator<YieldInstruction> EditorBoundsFixer() // code taken from NathanKell, https://github.com/NathanKell/RealSolarSystem/blob/master/Source/CameraFixer.cs
@@ -261,7 +287,7 @@ class FSeditorExtender : MonoBehaviour
 
         Debug.Log("FSeditorExtender: Assigned hangar scale hotkey: " + newLine);
 
-        if (craftFileFormat >= 2)
+        if (craftFileFormat >= 3)
         {
             try
             {
@@ -270,7 +296,27 @@ class FSeditorExtender : MonoBehaviour
                 newLine = readSetting(stream);
                 VABextentsAlwaysMax = bool.Parse(newLine);
                 newLine = readSetting(stream);
-                BuildingStartMaxSize = bool.Parse(newLine);                
+                BuildingStartMaxSize = bool.Parse(newLine);
+                newLine = readSetting(stream);
+                configCamMaxDistance = float.Parse(newLine);
+                newLine = readSetting(stream);
+                configMaxWorkArea = float.Parse(newLine);
+            }
+            catch
+            {
+                Debug.Log("FSeditorExtender: Error parsing config values");
+            }
+        }
+        else if (craftFileFormat == 2)
+        {
+            try
+            {
+                newLine = readSetting(stream);
+                SPHextentsAlwaysMax = bool.Parse(newLine);
+                newLine = readSetting(stream);
+                VABextentsAlwaysMax = bool.Parse(newLine);
+                newLine = readSetting(stream);
+                BuildingStartMaxSize = bool.Parse(newLine);
             }
             catch
             {
