@@ -1,5 +1,5 @@
 //config version
-3
+4
 //Scale hangar key. See https://docs.unity3d.com/Documentation/Manual/Input.html
 [*]
 //NOT IN USE -- SPH Extents always Max? If false, the extents only expand when toggling the large model on
@@ -8,7 +8,9 @@ true
 true
 //NOT IN USE -- Buildings start at max size?
 false
-//Max camera distance. Setting this high may cause the cam to start zoomed far out, so adjust as needed
-80
-//Max work area
-500
+//NOT IN USE -- Max camera distance. Setting this high may cause the cam to start zoomed far out, so adjust as needed
+250
+//NOT IN USE -- Max work area
+1000
+//Rescaling Factor
+10
