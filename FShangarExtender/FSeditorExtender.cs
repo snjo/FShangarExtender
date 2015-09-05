@@ -146,6 +146,7 @@ namespace FShangarExtender
 			fetchLights();
 			listNodes();
 			hangarExtenderReady = true;
+			sceneScaled = false;
 			Debug.Log("[FSHangarExtender] - Attempting to init successful");
 		}
 

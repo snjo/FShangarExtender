@@ -2,6 +2,8 @@ Hangar Extender
 by Snjo Updated by Alewx
 
 
+2015-09-05 3.4.2
+-bug fixed that would stuck all buildings and part placements
 2015-09-05 3.4.1
 -bug in SPH fixed
 2015-09-05 3.4
