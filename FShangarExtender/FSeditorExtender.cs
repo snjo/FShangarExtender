@@ -168,6 +168,7 @@ namespace FShangarExtender
 					EditorBounds.Instance.constructionBounds = new Bounds(EditorBounds.Instance.constructionBounds.center, (EditorBounds.Instance.constructionBounds.extents / scalingFactor));
 					EditorBounds.Instance.cameraOffsetBounds = new Bounds(EditorBounds.Instance.cameraOffsetBounds.center, (EditorBounds.Instance.cameraOffsetBounds.extents / scalingFactor));
 					EditorBounds.Instance.cameraMaxDistance /= scalingFactor;
+					//Debug.Log("[FSHangarExtender] - Bounds scaled");
 					foreach (VABCamera c in vabCameras)
 					{
 						c.maxHeight /= scalingFactor;
@@ -178,6 +179,7 @@ namespace FShangarExtender
 							c.camera.layerCullDistances[i] /= scalingFactor * 2;
 						}
 					}
+					//Debug.Log("[FSHangarExtender] - vabCameras scaled");
 					foreach (SPHCamera c in sphCameras)
 					{
 						c.maxHeight /= scalingFactor;
@@ -190,11 +192,16 @@ namespace FShangarExtender
 							c.camera.layerCullDistances[i] /= scalingFactor * 2;
 						}
 					}
-					CameraManager.Instance.camera.farClipPlane /= scalingFactor * 2;
-					for (int i = 0; i < CameraManager.Instance.camera.layerCullDistances.Length; i++)
+					//Debug.Log("[FSHangarExtender] - sphCameras scaled");
+					if (CameraManager.Instance != null)
 					{
-						CameraManager.Instance.camera.layerCullDistances[i] /= scalingFactor * 2;
+						CameraManager.Instance.camera.farClipPlane /= scalingFactor * 2;
+						for (int i = 0; i < CameraManager.Instance.camera.layerCullDistances.Length; i++)
+						{
+							CameraManager.Instance.camera.layerCullDistances[i] /= scalingFactor * 2;
+						}
 					}
+					//Debug.Log("[FSHangarExtender] - CameraManager scaled");
 					RenderSettings.fogStartDistance /= scalingFactor;
 					RenderSettings.fogEndDistance /= scalingFactor;
 				}
@@ -203,6 +210,7 @@ namespace FShangarExtender
 					EditorBounds.Instance.constructionBounds = new Bounds(EditorBounds.Instance.constructionBounds.center, (EditorBounds.Instance.constructionBounds.extents * scalingFactor));
 					EditorBounds.Instance.cameraOffsetBounds = new Bounds(EditorBounds.Instance.cameraOffsetBounds.center, (EditorBounds.Instance.cameraOffsetBounds.extents * scalingFactor));
 					EditorBounds.Instance.cameraMaxDistance *= scalingFactor;
+					//Debug.Log("[FSHangarExtender] - Bounds scaled");
 					foreach (VABCamera c in vabCameras)
 					{
 						c.maxHeight *= scalingFactor;
@@ -213,6 +221,7 @@ namespace FShangarExtender
 							c.camera.layerCullDistances[i] *= scalingFactor * 2;
 						}
 					}
+					//Debug.Log("[FSHangarExtender] - vabCameras scaled");
 					foreach (SPHCamera c in sphCameras)
 					{
 						c.maxHeight *= scalingFactor;
@@ -225,15 +234,21 @@ namespace FShangarExtender
 							c.camera.layerCullDistances[i] *= scalingFactor * 2;
 						}
 					}
-					CameraManager.Instance.camera.farClipPlane *= scalingFactor * 2;
-					for (int i = 0; i < CameraManager.Instance.camera.layerCullDistances.Length; i++)
+					//Debug.Log("[FSHangarExtender] - sphCameras scaled");
+					if (CameraManager.Instance != null)
 					{
-						CameraManager.Instance.camera.layerCullDistances[i] *= scalingFactor * 2;
+						CameraManager.Instance.camera.farClipPlane *= scalingFactor * 2;
+						for (int i = 0; i < CameraManager.Instance.camera.layerCullDistances.Length; i++)
+						{
+							CameraManager.Instance.camera.layerCullDistances[i] *= scalingFactor * 2;
+						}
 					}
+					//Debug.Log("[FSHangarExtender] - CameraManager scaled");
 					RenderSettings.fogStartDistance *= scalingFactor;
 					RenderSettings.fogEndDistance *= scalingFactor;
 				}
 			}
+			Debug.Log("[FSHangarExtender] - Attempting work area scaling complete");
 			//print("[FSHangarExtender] - Editor camera set to Min = " + EditorBounds.Instance.cameraMinDistance + " Max = " + EditorBounds.Instance.cameraMaxDistance + " Start = " + EditorBounds.Instance.cameraStartDistance);
 			//print("[FSHangarExtender] - EditorBounds.Instance.constructionBounds.center = " + EditorBounds.Instance.constructionBounds.center + " EditorBounds.Instance.constructionBounds.extents = " + EditorBounds.Instance.constructionBounds.extents);
 			//print("[FSHangarExtender] - EditorBounds.Instance.cameraOffsetBounds.center = " + EditorBounds.Instance.constructionBounds.center + " EditorBounds.Instance.cameraOffsetBounds.extents = " + EditorBounds.Instance.constructionBounds.extents);
@@ -460,6 +475,7 @@ namespace FShangarExtender
 						}
 					}
 				}
+				Debug.Log("[FSHangarExtender] - shrink scene complete");
 			}
 			else
 			{
@@ -489,6 +505,7 @@ namespace FShangarExtender
 						}
 					}
 				}
+				Debug.Log("[FSHangarExtender] - shrink scene complete");
 			}
 			sceneScaled = !sceneScaled;
 		}
@@ -613,65 +630,6 @@ namespace FShangarExtender
 			return gotKeyPress;
 		}
 
-		/*
-		private void setScaleVAB(bool max)
-		{
-			if (sceneGeometryVAB != null)
-			{
-				if (max) //sceneGeometryVAB.transform.localScale.x == sceneScaleMinVAB
-				{
-					sceneGeometryVAB.transform.localScale = Vector3.one * sceneScaleMaxVAB;
-					setCamExtentsVAB(true);
-					if (sceneLights.Length > 0)
-					{
-						for (int i = 0; i < sceneLights.Length; ++i)
-						{
-							if (sceneLights[i].type == LightType.Spot) sceneLights[i].range *= sceneScaleMaxVAB / sceneScaleMinVAB;
-						}
-					}
-				}
-				else
-				{
-					sceneGeometryVAB.transform.localScale = Vector3.one * sceneScaleMinVAB;
-					if (!VABextentsAlwaysMax) setCamExtentsVAB(false);
 
-					if (sceneLights.Length > 0)
-					{
-						for (int i = 0; i < sceneLights.Length; ++i)
-						{
-							if (sceneLights[i].type == LightType.Spot) sceneLights[i].range /= sceneScaleMaxVAB / sceneScaleMinVAB;
-						}
-					}
-				}
-			}
-		}
-
-		private void setCamExtentsVAB(bool max)
-		{
-			if (max)
-			{
-				setSpaceNavExtents(editorSpaceNavigator, editorSpaceNavigatorBoundsMax);
-				cameraVAB.maxHeight = cameraVABHeightMax;
-				cameraVAB.maxDistance = cameraVABDistanceMax;
-			}
-			else
-			{
-				setSpaceNavExtents(editorSpaceNavigator, editorSpaceNavigatorBoundsMin);
-				cameraVAB.maxHeight = cameraVABHeightMin;
-				cameraVAB.maxDistance = cameraVABDistanceMin;
-			}
-			for (int i = 0; i < editorLogic.Length; i++)
-			{
-				if (max)
-				{
-					setEditorExtents(editorLogic[i], editorLogicBoundsMax);
-				}
-				else
-				{
-					setEditorExtents(editorLogic[i], editorLogicBoundsMin);
-				}
-			}
-		}
-		*/
 	}
 }

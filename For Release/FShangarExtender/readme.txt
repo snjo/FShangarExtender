@@ -2,7 +2,9 @@ Hangar Extender
 by Snjo Updated by Alewx
 
 
-2015-09-05
+2015-09-05 3.4.1
+-bug in SPH fixed
+2015-09-05 3.4
 -Compatibility with 1.0.4
 
 
