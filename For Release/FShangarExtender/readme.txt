@@ -2,6 +2,9 @@ Hangar Extender
 by Snjo Updated by Alewx
 
 
+2015-09-07 3.4.3
+-changed code structure
+-further bugfixing
 2015-09-05 3.4.2
 -bug fixed that would stuck all buildings and part placements
 2015-09-05 3.4.1
@@ -19,4 +22,6 @@ For the custom key to work, the settings.txt file MUST be placed in GameData\FSh
 License:
 Creative Commons Attribution 4.0 International.
 
-Source: https://github.com/snjo/FShangarExtender
+
+original Source: https://github.com/snjo/FShangarExtender
+Updates Source: https://github.com/Alewx/FShangarExtender
