@@ -1,7 +1,11 @@
 Hangar Extender
 by Snjo Updated by Alewx
 
-
+2015-09-18 3.4.4
+-added option to hide the hangar scene
+-added option to enable advanced debugging output
+-minimum zoom is increased by the scalingFactor
+-fixed bug of the boundinglimits
 2015-09-07 3.4.3
 -changed code structure
 -further bugfixing

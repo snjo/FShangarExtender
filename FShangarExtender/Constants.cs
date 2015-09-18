@@ -8,6 +8,7 @@ namespace FShangarExtender
 	static class Constants
 	{
 		public const string debugMarker = "[FSHangarExtender]";
+		public const string debugVersion = "Version 3.4.4";
 
 		public static string[] baseSceneNodeNames = { "vabscenery", "sphscenery", "vablvl1", "vablvl2", "vablvl3", "vabmodern", "sphlvl1", "sphlvl2", "sphlvl3", "sphmodern" };
 		public static string[] nonScalingNodeNames = { "vabcrew", "sphcrew" };

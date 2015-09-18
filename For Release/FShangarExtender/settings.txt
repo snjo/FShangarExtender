@@ -1,6 +1,6 @@
 //config version
-4
-//Scale hangar key. See https://docs.unity3d.com/Documentation/Manual/Input.html
+5
+//Scale hangar key, the astix and propably every other specialcharacter need the brackets [] while regular letters work for them self. See https://docs.unity3d.com/Documentation/Manual/Input.html
 [*]
 //NOT IN USE -- SPH Extents always Max? If false, the extents only expand when toggling the large model on
 true
@@ -12,5 +12,9 @@ false
 250
 //NOT IN USE -- Max work area
 1000
-//Rescaling Factor
-10
+//Rescaling Factor for the visual buildings
+5
+//hiding the Hangars in the scene
+false
+//advanced Debugging for more information in the Log
+false

@@ -90,7 +90,6 @@ namespace FShangarExtender
 				StartCoroutine(toggleScaling());
 			}
 			resetMod();
-			getSettings();
 			StartCoroutine(initFSHangarExtender());
 		}
 
@@ -155,7 +154,6 @@ namespace FShangarExtender
 					}
 				}
 			}
-
 			sceneScaled = false;
 			hangarExtenderReady = false;
 		}
@@ -167,7 +165,9 @@ namespace FShangarExtender
 		/// <returns></returns>
 		private IEnumerator<YieldInstruction> initFSHangarExtender()
 		{
-			Debugger.advancedDebug("Attempting to init", advancedDebug);
+			Debugger.advancedDebug(Constants.debugVersion+" Starting Up", true);
+			getSettings();
+			Debugger.advancedDebug("Attempting to init", true);
 			while ((object)EditorBounds.Instance == null && HighLogic.LoadedScene == GameScenes.EDITOR)
 			{
 				hangarExtenderReady = false;
@@ -178,18 +178,15 @@ namespace FShangarExtender
 				fetchSceneNodes();
 				yield return null;
 			}
-			originalConstructionBoundExtends = new Vector3(EditorBounds.Instance.constructionBounds.extents.x, EditorBounds.Instance.constructionBounds.extents.y, EditorBounds.Instance.constructionBounds.extents.z);
-			originalCameraOffsetBoundExtends = new Vector3(EditorBounds.Instance.cameraOffsetBounds.extents.x, EditorBounds.Instance.cameraOffsetBounds.extents.y, EditorBounds.Instance.cameraOffsetBounds.extents.z);
-			Debugger.advancedDebug(originalConstructionBoundExtends, advancedDebug);
-			Debugger.advancedDebug(originalCameraOffsetBoundExtends, advancedDebug);
+			originalConstructionBoundExtends = EditorBounds.Instance.constructionBounds.extents * 2;
+			originalCameraOffsetBoundExtends = EditorBounds.Instance.cameraOffsetBounds.extents * 2;
 			EditorBounds.Instance.cameraMinDistance /= scalingFactor;
 			fetchCameras();
 			fetchLights();
 			listNodes();
 			hangarExtenderReady = true;
 			sceneScaled = false;
-			Debugger.advancedDebug("Attempting to init successful", advancedDebug);
-
+			Debugger.advancedDebug("Attempting to init successful", true);
 			Debugger.advancedDebug("Editor camera set to Min = " + EditorBounds.Instance.cameraMinDistance + " Max = " + EditorBounds.Instance.cameraMaxDistance + " Start = " + EditorBounds.Instance.cameraStartDistance, advancedDebug);
 			Debugger.advancedDebug("EditorBounds.Instance.constructionBounds.center = " + EditorBounds.Instance.constructionBounds.center + " EditorBounds.Instance.constructionBounds.extents = (" + EditorBounds.Instance.constructionBounds.extents.x + " , " + EditorBounds.Instance.constructionBounds.extents.y + " , " + EditorBounds.Instance.constructionBounds.extents.z + ")", advancedDebug);
 			Debugger.advancedDebug("EditorBounds.Instance.cameraOffsetBounds.center = " + EditorBounds.Instance.cameraOffsetBounds.center + " EditorBounds.Instance.cameraOffsetBounds.extents = (" + EditorBounds.Instance.cameraOffsetBounds.extents.x + " , " + EditorBounds.Instance.cameraOffsetBounds.extents.y + " , " + EditorBounds.Instance.cameraOffsetBounds.extents.z + ")", advancedDebug);
@@ -213,8 +210,8 @@ namespace FShangarExtender
 				{
 					Debugger.advancedDebug("shrink scene", advancedDebug);
 
-					EditorBounds.Instance.constructionBounds = new Bounds(EditorBounds.Instance.constructionBounds.center, (originalConstructionBoundExtends * 2));
-					EditorBounds.Instance.cameraOffsetBounds = new Bounds(EditorBounds.Instance.cameraOffsetBounds.center, (originalCameraOffsetBoundExtends * 2));
+					EditorBounds.Instance.constructionBounds = new Bounds(EditorBounds.Instance.constructionBounds.center, (originalConstructionBoundExtends));
+					EditorBounds.Instance.cameraOffsetBounds = new Bounds(EditorBounds.Instance.cameraOffsetBounds.center, (originalCameraOffsetBoundExtends));
 					EditorBounds.Instance.cameraMaxDistance /= scalingFactor;
 					Debugger.advancedDebug("Bounds scaled", advancedDebug);
 
@@ -313,8 +310,8 @@ namespace FShangarExtender
 				{
 					Debugger.advancedDebug("rise scene", advancedDebug);
 
-					EditorBounds.Instance.constructionBounds = new Bounds(EditorBounds.Instance.constructionBounds.center, (originalConstructionBoundExtends * scalingFactor * 2));
-					EditorBounds.Instance.cameraOffsetBounds = new Bounds(EditorBounds.Instance.cameraOffsetBounds.center, (originalCameraOffsetBoundExtends * scalingFactor * 2));
+					EditorBounds.Instance.constructionBounds = new Bounds(EditorBounds.Instance.constructionBounds.center, (originalConstructionBoundExtends * scalingFactor));
+					EditorBounds.Instance.cameraOffsetBounds = new Bounds(EditorBounds.Instance.cameraOffsetBounds.center, (originalCameraOffsetBoundExtends * scalingFactor));
 					EditorBounds.Instance.cameraMaxDistance *= scalingFactor;
 					Debugger.advancedDebug("Bounds scaled", advancedDebug);
 
@@ -616,12 +613,12 @@ namespace FShangarExtender
 			StreamReader stream;
 			try
 			{
-				Debugger.advancedDebug("Filename and Path: " + Constants.CompletePathAndFileName, advancedDebug);
+				Debugger.advancedDebug("Filename and Path: " + Constants.CompletePathAndFileName, true);
 				stream = new StreamReader(Constants.CompletePathAndFileName);
 			}
 			catch
 			{
-				Debugger.advancedDebug("settings.txt not found in GameData\\FShangarExtender\\, using default settings.", advancedDebug);
+				Debugger.advancedDebug("settings.txt not found in GameData\\FShangarExtender\\, using default settings.", true);
 				return;
 			}
 			string newLine = string.Empty;
@@ -635,7 +632,7 @@ namespace FShangarExtender
 			// reads the used hotkey
 			newLine = readSetting(stream);
 			s_hotKey = newLine;
-			Debugger.advancedDebug("Assigned hotkey: " + newLine, advancedDebug);
+			Debugger.advancedDebug("Assigned hotkey: " + newLine, true);
 			// reads the used hotkey
 
 			try
@@ -675,12 +672,12 @@ namespace FShangarExtender
 				}
 				else
 				{
-					Debugger.advancedDebug("settings file format mismatching, using default settings.", advancedDebug);
+					Debugger.advancedDebug("settings file format mismatching, using default settings.", true);
 				}
 			}
 			catch
 			{
-				Debugger.advancedDebug("Error parsing config values", advancedDebug);
+				Debugger.advancedDebug("Error parsing config values", true);
 			}
 		}
 
@@ -710,7 +707,7 @@ namespace FShangarExtender
 			}
 			catch (Exception e)
 			{
-				Debugger.advancedDebug("stream reader error: " + e.ToString(), advancedDebug);
+				Debugger.advancedDebug("stream reader error: " + e.ToString(), true);
 			}
 			return newLine;
 		}
@@ -729,7 +726,7 @@ namespace FShangarExtender
 			}
 			catch
 			{
-				Debugger.advancedDebug("Invalid keycode. Resetting to numpad *", advancedDebug);
+				Debugger.advancedDebug("Invalid keycode. Resetting to numpad *", true);
 				s_hotKey = Constants.defaultHotKey;
 				gotKeyPress = false;
 			}
