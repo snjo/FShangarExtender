@@ -1,6 +1,9 @@
 Hangar Extender
 by Snjo Updated by Alewx
 
+2015-10-11 3.4.5
+-added stock toolbar button
+-slight improved hangar hiding (far from perfect)
 2015-09-18 3.4.4
 -added option to hide the hangar scene
 -added option to enable advanced debugging output
