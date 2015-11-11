@@ -160,17 +160,26 @@ namespace FShangarExtender
 			{
 				foreach (Node n in _hangarNodes)
 				{
-					List<SkinnedMeshRenderer> skinRenderers = new List<SkinnedMeshRenderer>();
-					n.transform.GetComponentsInChildren<SkinnedMeshRenderer>(skinRenderers);
-					foreach (SkinnedMeshRenderer r in skinRenderers)
+					if (n.transform != null)
 					{
-						r.enabled = true;
-					}
-					List<MeshRenderer> renderers = new List<MeshRenderer>();
-					n.transform.GetComponentsInChildren<MeshRenderer>(renderers);
-					foreach (MeshRenderer r in renderers)
-					{
-						r.enabled = true;
+						List<SkinnedMeshRenderer> skinRenderers = new List<SkinnedMeshRenderer>();
+						n.transform.GetComponentsInChildren<SkinnedMeshRenderer>(skinRenderers);
+						foreach (SkinnedMeshRenderer r in skinRenderers)
+						{
+							if (r != null)
+							{
+								r.enabled = true;
+							}
+						}
+						List<MeshRenderer> renderers = new List<MeshRenderer>();
+						n.transform.GetComponentsInChildren<MeshRenderer>(renderers);
+						foreach (MeshRenderer r in renderers)
+						{
+							if (r != null)
+							{
+								r.enabled = true;
+							}
+						}
 					}
 				}
 			}

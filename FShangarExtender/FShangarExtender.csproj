@@ -40,11 +40,11 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Games\KSP Source Projects\AssemblyReferences\1.0.4\Assembly-CSharp.dll</HintPath>
+      <HintPath>D:\Games\KSP Source Projects\AssemblyReferences\1.0.5\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Games\KSP Source Projects\AssemblyReferences\1.0.4\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>D:\Games\KSP Source Projects\AssemblyReferences\1.0.5\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -54,7 +54,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Games\KSP Source Projects\AssemblyReferences\1.0.4\UnityEngine.dll</HintPath>
+      <HintPath>D:\Games\KSP Source Projects\AssemblyReferences\1.0.5\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

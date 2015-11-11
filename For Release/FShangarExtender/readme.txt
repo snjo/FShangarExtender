@@ -1,6 +1,8 @@
 Hangar Extender
 by Snjo Updated by Alewx
 
+2015-10-11 3.4.6
+-Recompiled for KSP 1.0.5
 2015-10-11 3.4.5
 -added stock toolbar button
 -slight improved hangar hiding (far from perfect)
