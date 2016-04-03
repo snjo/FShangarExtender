@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using KSP;
+using KSP.UI;
+using KSP.UI.Screens;
 using System.IO;
 
 namespace FShangarExtender
@@ -18,17 +20,12 @@ namespace FShangarExtender
 		private static float configCamMaxDistance = 250f; //outdated
 		private static float configMaxWorkArea = 1000f; //outdated
 
-		private static string sceneGeometryNameVAB = "model_vab_parent_prefab";
-		private static string sceneGeometryNameSPH = "model_sph_parent_prefab";
-		private static string[] sceneGeometryNameVABStatics = new string[] { "model_vab_interior_occluder_v16", "model_vab_interior_props_v16", "model_vab_walls", "model_vab_windows" };
-		private static string sceneGeometryNameSPHStatic = "model_sph_interior_main_v16";
-
-
-
+		private Camera sceneCamera;
 		private List<VABCamera> _vabCameras = new List<VABCamera>();
 		private List<SPHCamera> _sphCameras = new List<SPHCamera>();
 		private List<Light> _sceneLights = new List<Light>();
 		private List<Node> _sceneNodes = new List<Node>();
+		private List<Node> _extraScaleNodes = new List<Node>();
 		private List<Node> _hangarNodes = new List<Node>();
 		private List<Node> _nonScalingNodes = new List<Node>();
 		private Transform _tempParent;
@@ -43,7 +40,6 @@ namespace FShangarExtender
 		private ApplicationLauncherButton _toolbarButton;
 		private static Texture2D _shrinkIcon;
 		private static Texture2D _extendIcon;
-
 
 
 		private class Node
@@ -130,6 +126,9 @@ namespace FShangarExtender
 		}
 
 
+		/// <summary>
+		/// public method to load the icons into the stock toolbar button.
+		/// </summary>
 		public void loadToolbarButton()
 		{
 			Debugger.advancedDebug("Applauncher loading up", true);
@@ -219,6 +218,7 @@ namespace FShangarExtender
 				fetchSceneNodes();
 				yield return null;
 			}
+			sceneCamera = EditorCamera.Instance.cam;
 			_originalConstructionBoundExtends = EditorBounds.Instance.constructionBounds.extents * 2;
 			_originalCameraOffsetBoundExtends = EditorBounds.Instance.cameraOffsetBounds.extents * 2;
 			EditorBounds.Instance.cameraMinDistance /= _scalingFactor;
@@ -256,15 +256,16 @@ namespace FShangarExtender
 					EditorBounds.Instance.cameraMaxDistance /= _scalingFactor;
 					Debugger.advancedDebug("Bounds scaled", _advancedDebug);
 
+
+					sceneCamera.farClipPlane /= _scalingFactor * 2;
+					for (int i = 0; i < sceneCamera.layerCullDistances.Length; i++)
+					{
+						sceneCamera.layerCullDistances[i] /= _scalingFactor * 2;
+					}
 					foreach (VABCamera c in _vabCameras)
 					{
 						c.maxHeight /= _scalingFactor;
 						c.maxDistance /= _scalingFactor;
-						c.camera.farClipPlane /= _scalingFactor;
-						for (int i = 0; i < c.camera.layerCullDistances.Length; i++)
-						{
-							c.camera.layerCullDistances[i] /= _scalingFactor * 2;
-						}
 					}
 					Debugger.advancedDebug("vabCameras scaled", _advancedDebug);
 					foreach (SPHCamera c in _sphCameras)
@@ -273,50 +274,52 @@ namespace FShangarExtender
 						c.maxDistance /= _scalingFactor;
 						c.maxDisplaceX /= _scalingFactor;
 						c.maxDisplaceZ /= _scalingFactor;
-						c.camera.farClipPlane /= _scalingFactor * 2;
-						for (int i = 0; i < c.camera.layerCullDistances.Length; i++)
-						{
-							c.camera.layerCullDistances[i] /= _scalingFactor * 2;
-						}
 					}
 					Debugger.advancedDebug("sphCameras scaled", _advancedDebug);
-					if (CameraManager.Instance != null)
-					{
-						CameraManager.Instance.camera.farClipPlane /= _scalingFactor * 2;
-						for (int i = 0; i < CameraManager.Instance.camera.layerCullDistances.Length; i++)
-						{
-							CameraManager.Instance.camera.layerCullDistances[i] /= _scalingFactor * 2;
-						}
-					}
-					Debugger.advancedDebug("CameraManager scaled", _advancedDebug);
+
+
 					RenderSettings.fogStartDistance /= _scalingFactor;
 					RenderSettings.fogEndDistance /= _scalingFactor;
 
-					Debugger.advancedDebug("show Hangars", _advancedDebug);
+
+					Debugger.advancedDebug("scale Hangars", _advancedDebug);
 					if (_hangarNodes != null && _hangarNodes.Count > 0)
 					{
 						foreach (Node n in _hangarNodes)
 						{
 							n.transform.localScale = n.defaultScaling;
+							Debugger.advancedDebug("scaleing Hangar" + n.transform.name, _advancedDebug);
 						}
 					}
+					Debugger.advancedDebug("scale Extra Nodes", _advancedDebug);
+					if (_extraScaleNodes != null && _extraScaleNodes.Count > 0)
+					{
+						foreach (Node n in _extraScaleNodes)
+						{
+							n.transform.localScale = n.defaultScaling;
+							Debugger.advancedDebug("scaleing Extra" + n.transform.name, _advancedDebug);
+						}
+					}
+					Debugger.advancedDebug("scale Scene", _advancedDebug);
 					if (_sceneNodes != null && _sceneNodes.Count > 0)
 					{
 						foreach (Node n in _sceneNodes)
 						{
 							n.transform.localScale = n.defaultScaling;
+							Debugger.advancedDebug("scaleing Scene" + n.transform.name, _advancedDebug);
 						}
 					}
-
+					Debugger.advancedDebug("attach Nodes", _advancedDebug);
 					if (_nonScalingNodes != null && _nonScalingNodes.Count > 0)
 					{
 						foreach (Node n in _nonScalingNodes)
 						{
 							n.transform.parent = n.originalParent;
 							n.transform.localScale = n.defaultScaling;
+							Debugger.advancedDebug("Reattaching Node" + n.transform.name, _advancedDebug);
 						}
 					}
-					Debugger.advancedDebug("scaling lights", _advancedDebug);
+					Debugger.advancedDebug("scale lights", _advancedDebug);
 					if (_sceneLights != null && _sceneLights.Count > 0)
 					{
 						foreach (Light l in _sceneLights)
@@ -374,15 +377,16 @@ namespace FShangarExtender
 					EditorBounds.Instance.cameraMaxDistance *= _scalingFactor;
 					Debugger.advancedDebug("Bounds scaled", _advancedDebug);
 
+
+					sceneCamera.farClipPlane *= _scalingFactor * 2;
+					for (int i = 0; i < sceneCamera.layerCullDistances.Length; i++)
+					{
+						sceneCamera.layerCullDistances[i] *= _scalingFactor * 2;
+					}
 					foreach (VABCamera c in _vabCameras)
 					{
 						c.maxHeight *= _scalingFactor;
 						c.maxDistance *= _scalingFactor;
-						c.camera.farClipPlane *= _scalingFactor * 2;
-						for (int i = 0; i < c.camera.layerCullDistances.Length; i++)
-						{
-							c.camera.layerCullDistances[i] *= _scalingFactor * 2;
-						}
 					}
 					Debugger.advancedDebug("vabCameras scaled", _advancedDebug);
 					foreach (SPHCamera c in _sphCameras)
@@ -391,22 +395,10 @@ namespace FShangarExtender
 						c.maxDistance *= _scalingFactor;
 						c.maxDisplaceX *= _scalingFactor;
 						c.maxDisplaceZ *= _scalingFactor;
-						c.camera.farClipPlane *= _scalingFactor * 2;
-						for (int i = 0; i < c.camera.layerCullDistances.Length; i++)
-						{
-							c.camera.layerCullDistances[i] *= _scalingFactor * 2;
-						}
 					}
 					Debugger.advancedDebug("sphCameras scaled", _advancedDebug);
-					if (CameraManager.Instance != null)
-					{
-						CameraManager.Instance.camera.farClipPlane *= _scalingFactor * 2;
-						for (int i = 0; i < CameraManager.Instance.camera.layerCullDistances.Length; i++)
-						{
-							CameraManager.Instance.camera.layerCullDistances[i] *= _scalingFactor * 2;
-						}
-					}
-					Debugger.advancedDebug("CameraManager scaled", _advancedDebug);
+
+
 					RenderSettings.fogStartDistance *= _scalingFactor;
 					RenderSettings.fogEndDistance *= _scalingFactor;
 
@@ -440,31 +432,45 @@ namespace FShangarExtender
 						Debugger.advancedDebug("hide Hangars complete", _advancedDebug);
 					}
 
-					Debugger.advancedDebug("show Hangars", _advancedDebug);
+					Debugger.advancedDebug("Dettach Nodes", _advancedDebug);
 					if (_nonScalingNodes != null && _nonScalingNodes.Count > 0)
 					{
 						foreach (Node n in _nonScalingNodes)
 						{
 							n.transform.parent = _tempParent;
 							n.transform.localScale = n.defaultScaling;
+							Debugger.advancedDebug("Dettaching Node - " + n.transform.name, _advancedDebug);
 						}
 					}
+					Debugger.advancedDebug("scale Hangar", _advancedDebug);
 					if (_hangarNodes != null && _hangarNodes.Count > 0)
 					{
 						foreach (Node n in _hangarNodes)
 						{
 							n.transform.localScale = n.defaultScaling * _scalingFactor;
+							Debugger.advancedDebug("scaleing HangarNode - " + n.transform.name, _advancedDebug);
 						}
 					}
+					Debugger.advancedDebug("scale Extra Nodes", _advancedDebug);
+					if (_extraScaleNodes != null && _extraScaleNodes.Count > 0)
+					{
+						foreach (Node n in _extraScaleNodes)
+						{
+							n.transform.localScale = n.defaultScaling * _scalingFactor;
+							Debugger.advancedDebug("scaleing Extra Node - " + n.transform.name, _advancedDebug);
+						}
+					}
+					Debugger.advancedDebug("scale Scene", _advancedDebug);
 					if (_sceneNodes != null && _sceneNodes.Count > 0)
 					{
 						foreach (Node n in _sceneNodes)
 						{
 							n.transform.localScale = n.defaultScaling * _scalingFactor;
+							Debugger.advancedDebug("scaling SceneNode - "+n.transform.name, _advancedDebug);
 						}
 					}
 
-					Debugger.advancedDebug("scaling lights", _advancedDebug);
+					Debugger.advancedDebug("scale lights", _advancedDebug);
 					if (_sceneLights != null && _sceneLights.Count > 0)
 					{
 						foreach (Light l in _sceneLights)
@@ -531,6 +537,7 @@ namespace FShangarExtender
 		/// </summary>
 		private static void listNodes()
 		{
+			Debugger.advancedDebug("listNodes started", true);
 			List<Transform> rootNodes = new List<Transform>();
 			foreach (Transform t in UnityEngine.Object.FindObjectsOfType<Transform>())
 			{
@@ -546,11 +553,12 @@ namespace FShangarExtender
 			}
 			foreach (Transform t in rootNodes)
 			{
-				if (!(string.Equals(t.name, "_UI") || string.Equals(t.name, "ScreenSafeUI")))
+				foreach(Transform ct in t)
 				{
-					Debugger.advancedDebug("RootTransform = " + t.name + " | isActive = " + t.gameObject.activeSelf, _advancedDebug);
+					Debugger.advancedDebug(t.name + " --- " + ct.name, true);
 				}
 			}
+			Debugger.advancedDebug("listNodes finished", true);
 		}
 
 
@@ -559,35 +567,21 @@ namespace FShangarExtender
 		/// </summary>
 		private static void listNodesAdvanced()
 		{
+			Debugger.advancedDebug("listNodesAdvanced started", true);
+			List<Transform> rootNodes = new List<Transform>();
+			foreach (Transform t in UnityEngine.Object.FindObjectsOfType<Transform>())
 			{
-				List<Transform> rootNodes = new List<Transform>();
-				foreach (Transform t in UnityEngine.Object.FindObjectsOfType<Transform>())
+				Transform newTransform = t.root;
+				while (newTransform.parent != null)
 				{
-					Transform newTransform = t.root;
-					while (newTransform.parent != null)
-					{
-						newTransform = newTransform.parent;
-					}
-					if (!rootNodes.Contains(newTransform))
-					{
-						rootNodes.Add(newTransform);
-					}
+					newTransform = newTransform.parent;
 				}
-				foreach (Transform t in rootNodes)
+				if (!rootNodes.Contains(newTransform))
 				{
-					if (!(string.Equals(t.name, "_UI") || string.Equals(t.name, "ScreenSafeUI")))
-					{
-						Debugger.advancedDebug("RootTransform = " + t.name + " | isActive = " + t.gameObject.activeSelf, _advancedDebug);
-
-						List<Transform> childs = getTransformChildsList(t);
-						foreach (Transform tx in childs)
-						{
-							Debugger.advancedDebug("ChildTransform = " + tx.name + " | Parent = " + tx.parent.name + " | isActive = " + tx.gameObject.activeSelf, _advancedDebug);
-						}
-
-					}
+					rootNodes.Add(newTransform);
 				}
 			}
+			Debugger.advancedDebug("listNodesAdvanced finished", true);
 		}
 
 
@@ -647,7 +641,7 @@ namespace FShangarExtender
 							newNode.originalParent = t.parent;
 							newNode.defaultScaling = t.localScale;
 							_hangarNodes.Add(newNode);
-							Debugger.advancedDebug("found new scene node: " + t.name, _advancedDebug);
+							Debugger.advancedDebug("found new hangar node: " + t.name, _advancedDebug);
 							break;
 						}
 					}
@@ -691,7 +685,7 @@ namespace FShangarExtender
 								newNode.originalParent = t.parent;
 								newNode.defaultScaling = t.localScale;
 								_nonScalingNodes.Add(newNode);
-								Debugger.advancedDebug("found new scen node for not scaling: " + t.name + " | position = " + t.localPosition.x + " | " + t.localPosition.y + " | " + t.localPosition.z, _advancedDebug);
+								Debugger.advancedDebug("found new hangar node for not scaling: " + t.name + " | position = " + t.localPosition.x + " | " + t.localPosition.y + " | " + t.localPosition.z, _advancedDebug);
 								break;
 							}
 						}
@@ -713,7 +707,7 @@ namespace FShangarExtender
 								newNode.originalParent = t.parent;
 								newNode.defaultScaling = t.localScale;
 								_nonScalingNodes.Add(newNode);
-								Debugger.advancedDebug("found new scen node for not scaling: " + t.name + " | position = " + t.localPosition.x + " | " + t.localPosition.y + " | " + t.localPosition.z, _advancedDebug);
+								Debugger.advancedDebug("found new scene node for not scaling: " + t.name + " | position = " + t.localPosition.x + " | " + t.localPosition.y + " | " + t.localPosition.z, _advancedDebug);
 								break;
 							}
 						}
@@ -721,6 +715,17 @@ namespace FShangarExtender
 				}
 			}
 			Debugger.advancedDebug("nonscaling nodes collected", _advancedDebug);
+			foreach (string s in Constants.extraScaleNames)
+			{
+				Transform newtransform = GameObject.Find(s).transform;
+				Node newNode = new Node();
+				newNode.transform = newtransform;
+				newNode.originalParent = newtransform.parent;
+				newNode.defaultScaling = newtransform.localScale;
+				_extraScaleNodes.Add(newNode);
+				Debugger.advancedDebug("found new extra scale node: " + newtransform.name, _advancedDebug);
+			}
+			Debugger.advancedDebug("extra scaling nodes collected", _advancedDebug);
 		}
 
 
@@ -854,4 +859,6 @@ namespace FShangarExtender
 
 
 	}
+
+
 }
