@@ -25,7 +25,6 @@ namespace FShangarExtender
 		private List<SPHCamera> _sphCameras = new List<SPHCamera>();
 		private List<Light> _sceneLights = new List<Light>();
 		private List<Node> _sceneNodes = new List<Node>();
-		private List<Node> _extraScaleNodes = new List<Node>();
 		private List<Node> _hangarNodes = new List<Node>();
 		private List<Node> _nonScalingNodes = new List<Node>();
 		private Transform _tempParent;
@@ -126,6 +125,84 @@ namespace FShangarExtender
 		}
 
 
+		public void prepareTransforms()
+		{
+			List<Transform> tList = new List<Transform>();
+			foreach(Node n in _hangarNodes)
+			{
+				tList.Add(n.transform);
+			}
+			deStaticObjectList(tList);
+			tList.Clear();
+
+			foreach (Node n in _sceneNodes)
+			{
+				tList.Add(n.transform);
+			}
+			deStaticObjectList(tList);
+			tList.Clear();
+
+		}
+
+
+		public void deStaticObjectList(List<Transform> list)
+		{
+			foreach(Transform t in list)
+			{
+				Transform[] childs = t.GetComponentsInChildren<Transform>();
+				foreach(Transform c in childs)
+				{
+					c.gameObject.isStatic = false;
+				}
+			}
+		}
+
+
+		private void updateMeshes()
+		{
+			if (_hangarNodes != null && _hangarNodes.Count > 0)
+			{
+				foreach (Node n in _hangarNodes)
+				{
+					n.transform.gameObject.isStatic = false;
+					List<MeshFilter> listedMeshFilters = new List<MeshFilter>();
+					n.transform.GetComponentsInChildren<MeshFilter>(listedMeshFilters);
+					foreach (MeshFilter mf in listedMeshFilters)
+					{
+						Mesh mesh = mf.mesh;
+						mesh.MarkDynamic();
+						Vector3[] verticies = mesh.vertices;
+
+						for (int i = 0; i < verticies.Length; i++)
+						{
+							Vector3 v = verticies[i];
+							Vector3 target = new Vector3(v.x * _scalingFactor, v.y * _scalingFactor, v.z * _scalingFactor);
+							verticies[i] = target;
+						}
+						mf.mesh.UploadMeshData(false);
+					}
+				}
+			}
+		}
+
+
+
+		//int scaler;
+		//public void OnGUI()
+		//{
+		//	if (_extraScaleNodes != null && _extraScaleNodes.Count > 0)
+		//	{
+		//		Debugger.advancedDebug("Pre - " + _extraScaleNodes[0].transform.localScale.x + " - " + _extraScaleNodes[0].transform.localScale.y + " - " + _extraScaleNodes[0].transform.localScale.z, true);
+		//		scaler = (int)GUI.HorizontalSlider(new Rect(500, 500, 500, 50), scaler, 1, 5);
+		//		if (Input.GetKey(KeyCode.Return))
+		//		{
+		//			_extraScaleNodes[0].transform.localScale = new Vector3(scaler, scaler, scaler);
+		//		}
+		//		Debugger.advancedDebug("Post - " + _extraScaleNodes[0].transform.localScale.x + " - " + _extraScaleNodes[0].transform.localScale.y + " - " + _extraScaleNodes[0].transform.localScale.z, true);
+		//	}
+		//}
+
+
 		/// <summary>
 		/// public method to load the icons into the stock toolbar button.
 		/// </summary>
@@ -182,7 +259,6 @@ namespace FShangarExtender
 					}
 				}
 			}
-
 			_sceneNodes.Clear();
 			_hangarNodes.Clear();
 			_nonScalingNodes.Clear();
@@ -218,6 +294,7 @@ namespace FShangarExtender
 				fetchSceneNodes();
 				yield return null;
 			}
+			prepareTransforms();
 			sceneCamera = EditorCamera.Instance.cam;
 			_originalConstructionBoundExtends = EditorBounds.Instance.constructionBounds.extents * 2;
 			_originalCameraOffsetBoundExtends = EditorBounds.Instance.cameraOffsetBounds.extents * 2;
@@ -281,7 +358,6 @@ namespace FShangarExtender
 					RenderSettings.fogStartDistance /= _scalingFactor;
 					RenderSettings.fogEndDistance /= _scalingFactor;
 
-
 					Debugger.advancedDebug("scale Hangars", _advancedDebug);
 					if (_hangarNodes != null && _hangarNodes.Count > 0)
 					{
@@ -291,24 +367,15 @@ namespace FShangarExtender
 							Debugger.advancedDebug("scaleing Hangar" + n.transform.name, _advancedDebug);
 						}
 					}
-					Debugger.advancedDebug("scale Extra Nodes", _advancedDebug);
-					if (_extraScaleNodes != null && _extraScaleNodes.Count > 0)
-					{
-						foreach (Node n in _extraScaleNodes)
-						{
-							n.transform.localScale = n.defaultScaling;
-							Debugger.advancedDebug("scaleing Extra" + n.transform.name, _advancedDebug);
-						}
-					}
-					Debugger.advancedDebug("scale Scene", _advancedDebug);
-					if (_sceneNodes != null && _sceneNodes.Count > 0)
-					{
-						foreach (Node n in _sceneNodes)
-						{
-							n.transform.localScale = n.defaultScaling;
-							Debugger.advancedDebug("scaleing Scene" + n.transform.name, _advancedDebug);
-						}
-					}
+					//Debugger.advancedDebug("scale Scene", _advancedDebug);
+					//if (_sceneNodes != null && _sceneNodes.Count > 0)
+					//{
+					//	foreach (Node n in _sceneNodes)
+					//	{
+					//		n.transform.localScale = n.defaultScaling;
+					//		Debugger.advancedDebug("scaleing Scene" + n.transform.name, _advancedDebug);
+					//	}
+					//}
 					Debugger.advancedDebug("attach Nodes", _advancedDebug);
 					if (_nonScalingNodes != null && _nonScalingNodes.Count > 0)
 					{
@@ -327,6 +394,7 @@ namespace FShangarExtender
 							if (l.type == LightType.Spot)
 							{
 								l.range /= _scalingFactor;
+								Debugger.advancedDebug("scaling light", _advancedDebug);
 							}
 						}
 					}
@@ -342,25 +410,20 @@ namespace FShangarExtender
 								n.transform.GetComponentsInChildren<SkinnedMeshRenderer>(skinRenderers);
 								foreach (SkinnedMeshRenderer r in skinRenderers)
 								{
-									if (!Constants.baseHangarVisibleNames.Contains(r.gameObject.name))
-									{
-										r.enabled = true;
-									}
+									r.enabled = true;
 								}
 								List<MeshRenderer> renderers = new List<MeshRenderer>();
 								n.transform.GetComponentsInChildren<MeshRenderer>(renderers);
 								foreach (MeshRenderer r in renderers)
 								{
-									if (!Constants.baseHangarVisibleNames.Contains(r.gameObject.name))
-									{
-										r.enabled = true;
-									}
+									r.enabled = true;
 								}
 							}
 						}
 						Debugger.advancedDebug("hide Hangars complete", _advancedDebug);
 					}
 
+					Debugger.advancedDebug("update Button", _advancedDebug);
 					if (_toolbarButton != null && _extendIcon != null)
 					{
 						_toolbarButton.SetTexture(_extendIcon);
@@ -413,25 +476,18 @@ namespace FShangarExtender
 								n.transform.GetComponentsInChildren<SkinnedMeshRenderer>(skinRenderers);
 								foreach (SkinnedMeshRenderer r in skinRenderers)
 								{
-									if (!Constants.baseHangarVisibleNames.Contains(r.gameObject.name))
-									{
-										r.enabled = false;
-									}
+									r.enabled = false;
 								}
 								List<MeshRenderer> renderers = new List<MeshRenderer>();
 								n.transform.GetComponentsInChildren<MeshRenderer>(renderers);
 								foreach (MeshRenderer r in renderers)
 								{
-									if (!Constants.baseHangarVisibleNames.Contains(r.gameObject.name))
-									{
-										r.enabled = false;
-									}
+									r.enabled = false;
 								}
 							}
 						}
 						Debugger.advancedDebug("hide Hangars complete", _advancedDebug);
 					}
-
 					Debugger.advancedDebug("Dettach Nodes", _advancedDebug);
 					if (_nonScalingNodes != null && _nonScalingNodes.Count > 0)
 					{
@@ -451,24 +507,15 @@ namespace FShangarExtender
 							Debugger.advancedDebug("scaleing HangarNode - " + n.transform.name, _advancedDebug);
 						}
 					}
-					Debugger.advancedDebug("scale Extra Nodes", _advancedDebug);
-					if (_extraScaleNodes != null && _extraScaleNodes.Count > 0)
-					{
-						foreach (Node n in _extraScaleNodes)
-						{
-							n.transform.localScale = n.defaultScaling * _scalingFactor;
-							Debugger.advancedDebug("scaleing Extra Node - " + n.transform.name, _advancedDebug);
-						}
-					}
-					Debugger.advancedDebug("scale Scene", _advancedDebug);
-					if (_sceneNodes != null && _sceneNodes.Count > 0)
-					{
-						foreach (Node n in _sceneNodes)
-						{
-							n.transform.localScale = n.defaultScaling * _scalingFactor;
-							Debugger.advancedDebug("scaling SceneNode - "+n.transform.name, _advancedDebug);
-						}
-					}
+					//Debugger.advancedDebug("scale Scene", _advancedDebug);
+					//if (_sceneNodes != null && _sceneNodes.Count > 0)
+					//{
+					//	foreach (Node n in _sceneNodes)
+					//	{
+					//		n.transform.localScale = n.defaultScaling * _scalingFactor;
+					//		Debugger.advancedDebug("scaling SceneNode - "+n.transform.name, _advancedDebug);
+					//	}
+					//}
 
 					Debugger.advancedDebug("scale lights", _advancedDebug);
 					if (_sceneLights != null && _sceneLights.Count > 0)
@@ -478,10 +525,12 @@ namespace FShangarExtender
 							if (l.type == LightType.Spot)
 							{
 								l.range *= _scalingFactor;
+								Debugger.advancedDebug("scaling light", _advancedDebug);
 							}
 						}
 					}
 
+					Debugger.advancedDebug("update Button", _advancedDebug);
 					if (_toolbarButton != null && _shrinkIcon != null)
 					{
 						_toolbarButton.SetTexture(_shrinkIcon);
@@ -715,17 +764,6 @@ namespace FShangarExtender
 				}
 			}
 			Debugger.advancedDebug("nonscaling nodes collected", _advancedDebug);
-			foreach (string s in Constants.extraScaleNames)
-			{
-				Transform newtransform = GameObject.Find(s).transform;
-				Node newNode = new Node();
-				newNode.transform = newtransform;
-				newNode.originalParent = newtransform.parent;
-				newNode.defaultScaling = newtransform.localScale;
-				_extraScaleNodes.Add(newNode);
-				Debugger.advancedDebug("found new extra scale node: " + newtransform.name, _advancedDebug);
-			}
-			Debugger.advancedDebug("extra scaling nodes collected", _advancedDebug);
 		}
 
 
@@ -788,6 +826,7 @@ namespace FShangarExtender
 
 					newLine = readSetting(stream);
 					_hideHangars = newLine != "" ? bool.Parse(newLine) : false;
+					_hideHangars = true;
 					Debugger.advancedDebug("Assigned hideHangars: " + _hideHangars, true);
 
 					newLine = readSetting(stream);
