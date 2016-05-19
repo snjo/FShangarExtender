@@ -6,7 +6,7 @@
 true
 //NOT IN USE -- VAB Extents always Max? If false, the extents only expand when toggling the large model on
 true
-//NOT IN USE -- Buildings start at max size?
+//Buildings start at max size?
 false
 //NOT IN USE -- Max camera distance. Setting this high may cause the cam to start zoomed far out, so adjust as needed
 250
@@ -15,6 +15,6 @@ false
 //Rescaling Factor for the visual buildings
 5
 //hiding the Hangars in the scene
-false
+true
 //advanced Debugging for more information in the Log
 false
