@@ -271,7 +271,7 @@ namespace FShangarExtender
 			_hangarExtenderReady = false;
 			_isFirstUpdate = true;
 
-			if(_toolbarButton != null)
+			if (_toolbarButton != null)
 			{
 				ApplicationLauncher.Instance.RemoveModApplication(_toolbarButton);
 			}
