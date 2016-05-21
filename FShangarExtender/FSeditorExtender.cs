@@ -39,6 +39,7 @@ namespace FShangarExtender
 		private ApplicationLauncherButton _toolbarButton;
 		private static Texture2D _shrinkIcon;
 		private static Texture2D _extendIcon;
+		private bool _isFirstUpdate;
 
 
 		private class Node
@@ -102,11 +103,12 @@ namespace FShangarExtender
 			if (_hangarExtenderReady)
 			{
 				bool gotKeyPress = rescaleKeyPressed();
-				if (gotKeyPress)
+				if (_isFirstUpdate && BuildingStartMaxSize || gotKeyPress)
 				{
 					Debugger.advancedDebug("Scaling Hangar Geometry", _advancedDebug);
 					StartCoroutine(toggleScaling());
 				}
+				_isFirstUpdate = false;
 			}
 		}
 
@@ -267,6 +269,7 @@ namespace FShangarExtender
 			_sphCameras.Clear();
 			_sceneScaled = false;
 			_hangarExtenderReady = false;
+			_isFirstUpdate = true;
 
 			if (_toolbarButton != null)
 			{
