@@ -1,6 +1,8 @@
 Hangar Extender
 by Snjo Updated by Alewx
 
+2016-10-10 3.4.9
+-Recompiled for KSP 1.2
 2016-04-21 3.4.8
 -Bug fix
 - hiding hangar by default (gamemodel is no longer scaleable)

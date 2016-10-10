@@ -103,7 +103,7 @@ namespace FShangarExtender
 			if (_hangarExtenderReady)
 			{
 				bool gotKeyPress = rescaleKeyPressed();
-				if (_isFirstUpdate && BuildingStartMaxSize || gotKeyPress)
+				if ((_isFirstUpdate && BuildingStartMaxSize) || gotKeyPress)
 				{
 					Debugger.advancedDebug("Scaling Hangar Geometry", _advancedDebug);
 					StartCoroutine(toggleScaling());
@@ -394,10 +394,13 @@ namespace FShangarExtender
 					{
 						foreach (Light l in _sceneLights)
 						{
-							if (l.type == LightType.Spot)
+							if (l != null)
 							{
-								l.range /= _scalingFactor;
-								Debugger.advancedDebug("scaling light", _advancedDebug);
+								if (l.type == LightType.Spot)
+								{
+									l.range /= _scalingFactor;
+									Debugger.advancedDebug("scaling light", _advancedDebug);
+								}
 							}
 						}
 					}
@@ -525,10 +528,13 @@ namespace FShangarExtender
 					{
 						foreach (Light l in _sceneLights)
 						{
-							if (l.type == LightType.Spot)
+							if (l != null)
 							{
-								l.range *= _scalingFactor;
-								Debugger.advancedDebug("scaling light", _advancedDebug);
+								if (l.type == LightType.Spot)
+								{
+									l.range *= _scalingFactor;
+									Debugger.advancedDebug("scaling light", _advancedDebug);
+								}
 							}
 						}
 					}
@@ -812,6 +818,7 @@ namespace FShangarExtender
 
 					newLine = readSetting(stream);
 					BuildingStartMaxSize = bool.Parse(newLine);
+					Debugger.advancedDebug("Assigned BuildingStartMaxSize: " + _scalingFactor, true);
 				}
 				if (craftFileFormat > 2)
 				{
